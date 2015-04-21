@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+	<head>
+	<title>Clickers</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Roboto">
+	<script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-animate.js"></script>
+	<script src="./socket.io/socket.io.js"></script>
+	<script src="controllers.js"></script>
+	<script src="directives.js"></script>
+	<style type="text/css">
+		body { font-family: 'Roboto', serif; }
+	</style>
+</head>
+<body ng-app="ClickersApp" style="background-color: #7383c5">
+	<div ng-controller="mainController" style="width: 100%; height: 100%">
+		<iframe name="hidden-iframe" style="display: none;" onLoad="try { document.getElementById('text').value = ''; document.getElementById('file').value = ''; } catch (e) {}"></iframe>
+		<div style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; z-index: 9999999; text-align: center" ng-if="!authed">
+			<table width="100%" height="100%" cellspacing="0" cellpadding="0">
+				<tr height="100%">
+					<td width="100%">
+						<loginform></loginform>
+					</td>
+				</tr>
+			</table>
+		</div>
+		
+		<img ng-show="authed && !student" alt="New Question" ng-src="{{!rootfields.upload ? 'new.png' : 'close.png'}}" style="max-height: 70px; position: fixed; bottom: 25px; right: 35px; z-index: 99999" ng-click="resetUpload(); rootfields.upload = !rootfields.upload">
+		<div drag-and-drop style="position: fixed; width: 550px; height: 100%; overflow: auto; text-align: center; top: 0px; right: 0px; border-left: 1px solid white; background-color: #364583; color: white; z-index: 999" ng-show="authed && rootfields.upload && !student">
+			<div style="text-align: center; padding-top: 25px; padding-bottom: 10px; padding-left: 10px; padding-right: 10px">
+				<h2 ng-show="editIndex < 0" style="margin-top: 0px">New Question</h2>
+				<h2 ng-show="editIndex >= 0" style="margin-top: 0px">Editing Question {{editIndex + 1}}</h2>
+				<form upload-form></form>
+			</div>
+		</div>
+		
+		<div ng-show="authed" drag-and-drop style="height: 100%">
+			<div ng-style="{paddingRight : (!student && rootfields.upload && '551px') || '0px'}" style="text-align: center">
+				<h1 style="color: white; margin-bottom: 0px; margin-top: 0px; padding-top: 30px">Clickers ({{fields.username}})</h1>
+				<div style="padding-top: 20px; color: white"><span style="padding-right: 10px">Session:</span>
+					<select ng-options="session as session for session in sessions track by session" ng-model="selectedSession">
+						<option value="" ng-if="false"></option>
+					</select>
+					<span ng-if="!student" style="padding-left: 30px"><button style="height: 35px" ng-click="addSession();">New Session</button></span>
+				</div>
+				<span ng-show="admin"><input style="position: relative; top: 12px" type="checkbox" ng-model="student" ng-init="false"> <span style="color: white">Student Mode</span><br /></span>
+				<div style="display: inline-block; text-align: left; width: 90%; max-width: 800px; padding: 20px">
+					<div ng-if="!questions || questions.length == 0" style="text-align: center; color: white"><h2>No questions to show yet.<br /><span ng-if="!student">Click the + icon to get started.</span></h2></div>
+					<question-list data='questions'></question-list>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

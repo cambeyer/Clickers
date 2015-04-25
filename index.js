@@ -189,12 +189,15 @@ http.listen(4000, "0.0.0.0", function(){
 	console.log('listening on *:4000');
 	globalquestions = {};
 	try {
-	fs.readdirSync(dir).forEach(function(file, index) {
-		if (!fs.lstatSync(dir + file).isDirectory()) {
-			globalquestions[file.split(".", 2)[0]] = JSON.parse(fs.readFileSync(dir + file, 'utf8'));
-		}
+		fs.readdirSync(dir).forEach(function(file, index) {
+			if (!fs.lstatSync(dir + file).isDirectory()) {
+				globalquestions[file.split(".", 2)[0]] = JSON.parse(fs.readFileSync(dir + file, 'utf8'));
+			}
 	});
 	} catch (e) {
+		try {
+			fs.mkdirSync(dir);
+		} catch (e) { }
 		console.log(e);
 	}
 });

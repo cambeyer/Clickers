@@ -1,7 +1,0 @@
-stats page (by student, by question, by i don't knows, by session)
-i don't know dedicated button
-timestamp on responses (history, just use latest)
-make it required if you're gonna say idk, you have to have another answer
-histogram per option per question
-
-documentation

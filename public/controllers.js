@@ -71,10 +71,12 @@ angular.module('ClickersApp.controllers', []).controller('mainController', funct
 		$scope.socket.emit('admins', {});
 	}
 	$scope.trash = function(date) {
-		var obj = {};
-		obj["associatedUsername"] = $scope.fields.associatedUsername;
-		obj["date"] = date;
-		$scope.socket.emit('delete', obj);
+		if (confirm("Are you sure you want to delete this question?  That will remove related statistics, as well.  You can also make it invisible...")) {
+			var obj = {};
+			obj["associatedUsername"] = $scope.fields.associatedUsername;
+			obj["date"] = date;
+			$scope.socket.emit('delete', obj);
+		}
 	}
 	$scope.edit = function(question, index) {
 		$scope.newQuestion = JSON.parse(JSON.stringify(question));

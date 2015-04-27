@@ -36,6 +36,15 @@
 			</div>
 		</div>
 		
+		<div style="position:fixed; width: 80%; height: 80%; top: 10%; left: 10%; border: 1px solid white; border-radius: 10px; background-color: #364583; color: white; z-index: 9999" ng-show="rootfields.stats && !student">
+			<div style="position: absolute; top: 10px; right: 10px"><img ng-click="rootfields.stats = !rootfields.stats" src="x.png" style="max-width: 25px"></div>
+			<div style="width: 100%; height: 100%; padding: 30px">
+				<div ng-repeat="(user, percentage) in stats | orderBy: percentage track by user">
+					{{user}}: {{percentage * 100 | number:2}}%
+				</div>
+			</div>
+		</div>
+		
 		<div ng-show="authed" drag-and-drop style="height: 100%">
 			<div ng-style="{paddingRight : (!student && rootfields.upload && '551px') || '0px'}" style="text-align: center">
 				<h1 style="color: white; margin-bottom: 0px; margin-top: 0px; padding-top: 30px">Clickers ({{fields.username}})</h1>
@@ -44,6 +53,7 @@
 						<option value="" ng-if="false"></option>
 					</select>
 					<span ng-if="!student" style="padding-left: 30px"><button style="height: 35px" ng-click="addSession();">New Session</button></span>
+					<span ng-if="!student" style="padding-left: 15px"><button style="height: 35px" ng-click="rootfields.stats = !rootfields.stats">Stats</button></span>
 				</div>
 				<span ng-show="admin"><input style="position: relative; top: 12px" type="checkbox" ng-model="student" ng-init="false"> <span style="color: white">Student Mode</span><br /></span>
 				<div style="display: inline-block; text-align: left; width: 90%; max-width: 800px; padding: 20px">

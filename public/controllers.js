@@ -10,7 +10,10 @@ angular.module('ClickersApp.controllers', []).controller('mainController', funct
 	$scope.authed = false;
 	$scope.questions = {};
 	
+	$scope.stats = {};
+	
 	$rootScope.rootfields = {
+		stats: false,
 		upload: false,
 		droppedFiles: [],
 		loading: false
@@ -45,6 +48,62 @@ angular.module('ClickersApp.controllers', []).controller('mainController', funct
 		if (response) {
 			$scope.sessions.push(response);
 			$scope.selectedSession = response;
+		}
+	}
+	
+	$scope.getAllUsernames = function() {
+		var names = [];
+		for (var i = 0; i < $scope.questions.length; i++) {
+			for (var j = 0; j < $scope.questions[i].responses.length; j++) {
+				for (var k = 0; k < names.length; k++) {
+					if (names[k] == $scope.questions[i].responses[j].username) {
+						names.splice(k, 1);
+					}
+				}
+				names.push($scope.questions[i].responses[j].username);
+			}
+		}
+		return names;
+	}
+	
+	$scope.buildStats = function() {
+		var totalResponses = 0;
+		$scope.stats = {};
+		var usernames = $scope.getAllUsernames();
+		for (var i = 0; i < $scope.questions.length; i++) {
+			for (var k = 0; k < $scope.questions[i].options.length; k++) {
+				totalResponses++;
+				if ($scope.questions[i].options[k].correct) {
+					for (var j = 0; j < $scope.questions[i].responses.length; j++) {
+						if ($scope.questions[i].options[k].text == $scope.questions[i].responses[j].text) {
+							if (!$scope.stats[$scope.questions[i].responses[j].username]) {
+								$scope.stats[$scope.questions[i].responses[j].username] = 0;
+							}
+							$scope.stats[$scope.questions[i].responses[j].username]++;
+						}
+					}
+				} else {
+					for (var j = 0; j < usernames.length; j++) {
+						if (!$scope.stats[usernames[j]]) {
+							$scope.stats[usernames[j]] = 0;
+						}
+						var contained = false;
+						for (var l = 0; l < $scope.questions[i].responses.length; l++) {
+							if ($scope.questions[i].options[k].text == $scope.questions[i].responses[l].text) {
+								if ($scope.questions[i].responses[l].username == usernames[j]) {
+									contained = true;
+								}
+							}
+						}
+						if (!contained) {
+							$scope.stats[usernames[j]]++;
+						}
+					}
+				}
+			}
+		}
+		for (var name in $scope.stats) {
+			$scope.stats[name] /= totalResponses;
 		}
 	}
 	
@@ -229,6 +288,7 @@ angular.module('ClickersApp.controllers', []).controller('mainController', funct
 				}
 			}
 			$scope.questions = msg;
+			$scope.buildStats();
 		});	
 	});
 	$scope.removeImage = function() {

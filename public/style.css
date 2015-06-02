@@ -43,9 +43,6 @@ li.animate-repeat {
 .checkboxes input {
 	vertical-align: middle;
 }
-.checkboxes label span {
-	vertical-align: middle;
-}
 
 html, body {
 	padding: 0px;

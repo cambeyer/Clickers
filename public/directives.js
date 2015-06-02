@@ -155,7 +155,7 @@ directive('questionList', function() {
 							'<li class="animate-repeat" ng-repeat="option in question.options track by $index">' + 
 								'<div class="checkboxes noselect">' + 
 									'<label style="padding-left: 20px"><input ng-show="student" style="height: initial" type="checkbox" ng-model="question.options[$index].chosen" name="$index">' + 
-									' <span ng-click="hideresponses = !hideresponses">{{option.text}}<span ng-if="!student">{{option.correct ? \' (Correct)\' : \' (Incorrect)\'}}</span><img ng-show="!student" style="position: relative; top: 5px; left: 5px; max-height: 20px" ng-src="{{hideresponses ? \'expand.png\' : \'collapse.png\'}}"></span></label>' + 
+									' <span ng-click="hideresponses = !hideresponses">{{option.text}}<span ng-if="!student">{{option.correct ? \' (Correct)\' : \' (Incorrect)\'}}</span> ({{(question.responses | filter:option.text:true).length}} <span ng-if="(question.responses | filter:option.text:true).length == 1">response</span><span ng-if="(question.responses | filter:option.text:true).length !== 1">responses</span>)<img ng-show="!student" style="position: relative; top: 5px; left: 5px; max-height: 20px" ng-src="{{hideresponses ? \'expand.png\' : \'collapse.png\'}}"></span></label>' + 
 								'</div><div style="clear: both"></div>' + 
 								'<div style="padding-left: 60px; line-height: initial" ng-show="!student && !hideresponses" ng-repeat="response in question.responses | filter:option.text:true | orderBy: \'username\' track by $index">{{response.username}}</div>' + 
 							'</li>' + 

@@ -54,13 +54,15 @@ angular.module('ClickersApp.controllers', []).controller('mainController', funct
 	$scope.getAllUsernames = function() {
 		var names = [];
 		for (var i = 0; i < $scope.questions.length; i++) {
-			for (var j = 0; j < $scope.questions[i].responses.length; j++) {
-				for (var k = 0; k < names.length; k++) {
-					if (names[k] == $scope.questions[i].responses[j].username) {
-						names.splice(k, 1);
+			if ($scope.questions[i].responses) {
+				for (var j = 0; j < $scope.questions[i].responses.length; j++) {
+					for (var k = 0; k < names.length; k++) {
+						if (names[k] == $scope.questions[i].responses[j].username) {
+							names.splice(k, 1);
+						}
 					}
+					names.push($scope.questions[i].responses[j].username);
 				}
-				names.push($scope.questions[i].responses[j].username);
 			}
 		}
 		return names;
@@ -71,32 +73,38 @@ angular.module('ClickersApp.controllers', []).controller('mainController', funct
 		$scope.stats = {};
 		var usernames = $scope.getAllUsernames();
 		for (var i = 0; i < $scope.questions.length; i++) {
-			for (var k = 0; k < $scope.questions[i].options.length; k++) {
-				totalResponses++;
-				if ($scope.questions[i].options[k].correct) {
-					for (var j = 0; j < $scope.questions[i].responses.length; j++) {
-						if ($scope.questions[i].options[k].text == $scope.questions[i].responses[j].text) {
-							if (!$scope.stats[$scope.questions[i].responses[j].username]) {
-								$scope.stats[$scope.questions[i].responses[j].username] = 0;
-							}
-							$scope.stats[$scope.questions[i].responses[j].username]++;
-						}
-					}
-				} else {
-					for (var j = 0; j < usernames.length; j++) {
-						if (!$scope.stats[usernames[j]]) {
-							$scope.stats[usernames[j]] = 0;
-						}
-						var contained = false;
-						for (var l = 0; l < $scope.questions[i].responses.length; l++) {
-							if ($scope.questions[i].options[k].text == $scope.questions[i].responses[l].text) {
-								if ($scope.questions[i].responses[l].username == usernames[j]) {
-									contained = true;
+			if ($scope.questions[i].session == $scope.selectedSession) {
+				for (var k = 0; k < $scope.questions[i].options.length; k++) {
+					totalResponses++;
+					if ($scope.questions[i].options[k].correct) {
+						if ($scope.questions[i].responses) {
+							for (var j = 0; j < $scope.questions[i].responses.length; j++) {
+								if ($scope.questions[i].options[k].text == $scope.questions[i].responses[j].text) {
+									if (!$scope.stats[$scope.questions[i].responses[j].username]) {
+										$scope.stats[$scope.questions[i].responses[j].username] = 0;
+									}
+									$scope.stats[$scope.questions[i].responses[j].username]++;
 								}
 							}
 						}
-						if (!contained) {
-							$scope.stats[usernames[j]]++;
+					} else {
+						for (var j = 0; j < usernames.length; j++) {
+							if (!$scope.stats[usernames[j]]) {
+								$scope.stats[usernames[j]] = 0;
+							}
+							var contained = false;
+							if ($scope.questions[i].responses) {
+								for (var l = 0; l < $scope.questions[i].responses.length; l++) {
+									if ($scope.questions[i].options[k].text == $scope.questions[i].responses[l].text) {
+										if ($scope.questions[i].responses[l].username == usernames[j]) {
+											contained = true;
+										}
+									}
+								}
+							}
+							if (!contained) {
+								$scope.stats[usernames[j]]++;
+							}
 						}
 					}
 				}

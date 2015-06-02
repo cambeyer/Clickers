@@ -1,4 +1,6 @@
+//Defines the Angular directives used by Clickers
 angular.module('ClickersApp.directives', []).
+//Directive for the login form
 directive('loginform', function() {
 	return {
 		scope: false,
@@ -37,14 +39,19 @@ directive('loginform', function() {
 					'</tr>' + 
 				'</table>' + 
 			'</form>',
+			//Specifies that this directive will be controlled directly by the main controller scope rather than having an isolated scope
 		controller: function ($scope) {
 		}
 	};
 }).
+//Drag and drop directive to intercept a user placing a file onto the element this is specified on
 directive('dragAndDrop', function($rootScope) {
 	return {
 		scope: false,
+		//can only be an attribute of another element; can't be its own element
 		restrict: 'A',
+		//bind to the dragenter, dragleave, dragover, and drop events
+		//for each, stop the propogation and prevent the default action from occurring since we are handling the events directly
 		link: function($scope, elem, attr) {
 			elem.bind('dragenter', function(e) {
 				e.stopPropagation();
@@ -58,16 +65,19 @@ directive('dragAndDrop', function($rootScope) {
 				e.stopPropagation();
 				e.preventDefault();
 			});
+			//when the file is dropped, the event's dataTransfer property is examined to get the image content
 			elem.bind('drop', function(e) {
 				e.stopPropagation();
 				e.preventDefault();
+				//only allow dropping if the user is not in student mode
 				if (!$scope.student) {
-					$scope.parseImg(e.originalEvent.dataTransfer); //no originalEvent if jQuery script is included after angular
+					$scope.parseImg(e.originalEvent.dataTransfer); //no originalEvent if jQuery script is included after angular in the HTML file
 				}
 			});
 		}
 	};
 }).
+//Directive to provide the upload form
 directive('uploadForm', function($rootScope) {
 	return {
 		scope: false,
@@ -117,33 +127,44 @@ directive('uploadForm', function($rootScope) {
 				'</tr>' + 
 			'</table>',
 		link: function($scope, elem, attr) {
+			//When the form is submitted, this function is called
 			elem.bind('submit', function(e) {
+				//prevent the default submit behavior of refreshing the page
 				e.preventDefault();
-				//alert(JSON.stringify($scope.newQuestion));
+				//set the session variable on the new question object
 				$scope.newQuestion.session = $scope.selectedSession;
 				$scope.newQuestion.associatedUsername = $scope.fields.associatedUsername;
+				//deep clone the question object so we can modify it before sending to the server
 				var duplicate = JSON.parse(JSON.stringify($scope.newQuestion));
 				for (var i = 0; i < duplicate.options.length; i++) {
 					try {
+						//delete whether an option is chosen or not before sending back to the server
 						delete duplicate.options[i].chosen;
 					} catch (e) {}
 				}
+				//send the question object to the server via websockets
 				$scope.socket.emit('question', JSON.stringify(duplicate));
+				//reset the upload form
 				$scope.resetUpload();
+				//clear the droppedFiles
 				$rootScope.rootfields.droppedFiles = [];
+				//get rid of the image on the form, if there is one
 				$scope.removeImage();
+				//get a reference to the file browse... button
 				var fileInput = $("#file");
+				//trick to blank out the file browser with a new one
 				fileInput.replaceWith( fileInput.val('').clone( true ) );
 			});
 		}
 	};
 }).
+//Directive for the main question list
 directive('questionList', function() {
 	return {
 		scope: false,
+		//may only be an element
 		restrict: 'E',
 		template: '' + 
-		//socket.emit(\'delete\', question.date);
 			'<ul class="example-animate-container">' + 
 				'<li ng-if="question.session == selectedSession && (!student || question.visible)" class="animate-repeat" style="border-radius: 10px; background-color: #4558A7; color: white; border: 1px solid white; padding-left: 40px; padding-right: 40px; margin-top: 20px; line-height: normal" ng-repeat="question in object | orderBy: \'date\' track by question.date">' + 
 					'<div style="position: relative; top: 15px"><h2>Question {{$index + 1}}<a ng-show="!student" href="" class="button" style="position: relative; left: 20px" ng-click="trash(question.date)"><img src="delete.png" style="max-height: 30px; position: relative; top: 5px"></a><a ng-show="!student" href="" class="button" style="position: relative; left: 30px" ng-click="edit(question, $index)"><img src="edit.png" style="max-height: 30px; position: relative; top: 5px"></a></h2></div><br />' + 
@@ -165,8 +186,11 @@ directive('questionList', function() {
 				'</li>' + 
 			'</ul>',
 		link: function($scope, elem, attr) {
+			//allows the directive to update when the data attribute ($scope.questions) is updated
 			$scope.$watch(attr.data, function (value) {
+				//if the value is not undefined...
 				if (value) {
+					//set the internal object to the contents of the value that was updated
 					$scope.object = value;
 				}
 			});

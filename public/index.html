@@ -1,64 +1,104 @@
 <!doctype html>
 <html>
 	<head>
+	<!--Title for the name of the web browser tab-->
 	<title>Clickers</title>
+	<!--Link to the custom CSS stylesheet-->
 	<link rel="stylesheet" type="text/css" href="style.css">
+	<!--choose any font from Google Fonts-->
 	<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Roboto">
+	<!--JQuery library-->
 	<script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+	<!--Angular framework must be included AFTER JQuery-->
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js"></script>
+	<!--Slick Angular transitions/effects-->
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular-animate.js"></script>
+	<!--Realtime socket communication-->
 	<script src="./socket.io/socket.io.js"></script>
+	<!--Angular controllers-->
 	<script src="controllers.js"></script>
+	<!--Angular directives-->
 	<script src="directives.js"></script>
+	<!--Match this to the Google Fonts choice above-->
 	<style type="text/css">
 		body { font-family: 'Roboto', serif; }
 	</style>
 </head>
+<!--Assign an Angular application to handle this page-->
 <body ng-app="ClickersApp" style="background-color: #7383c5">
+	<!--Assign the Angular controller mainController to handle the scope-->
 	<div ng-controller="mainController" style="width: 100%; height: 100%">
-		<iframe name="hidden-iframe" style="display: none;" onLoad="try { document.getElementById('text').value = ''; document.getElementById('file').value = ''; } catch (e) {}"></iframe>
+		<!--Higher z-index puts the login screen in front of the question list-->
+		<!--Only shown if the user is not successfully authenticated-->
 		<div style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; z-index: 9999999; text-align: center" ng-if="!authed">
 			<table width="100%" height="100%" cellspacing="0" cellpadding="0">
 				<tr height="100%">
 					<td width="100%">
+						<!--Place the Angular directive for the login form on the page-->
 						<loginform></loginform>
 					</td>
 				</tr>
 			</table>
 		</div>
 		
+		<!--Google Material Design-esque question-add button-->
+		<!--When toggled directly, reset the form before showing it-->
 		<img ng-show="authed && !student" alt="New Question" ng-src="{{!rootfields.upload ? 'new.png' : 'close.png'}}" style="max-height: 70px; position: fixed; bottom: 25px; right: 35px; z-index: 99999" ng-click="resetUpload(); rootfields.upload = !rootfields.upload">
+		<!--New question form docked to the right side of the page-->
+		<!--Overflow auto so the form itself will scroll if it goes off the screen (lots of options etc)-->
+		<!--Uses the drag-and-drop directive to intercept image drag-drops-->
+		<!--Only shown if the user is authenticated and designated non-student-->
 		<div drag-and-drop style="position: fixed; width: 550px; height: 100%; overflow: auto; text-align: center; top: 0px; right: 0px; border-left: 1px solid white; background-color: #364583; color: white; z-index: 999" ng-show="authed && rootfields.upload && !student">
 			<div style="text-align: center; padding-top: 25px; padding-bottom: 10px; padding-left: 10px; padding-right: 10px">
+				<!--If the user is not editing a queston, show "New Question" prompt-->
 				<h2 ng-show="editIndex < 0" style="margin-top: 0px">New Question</h2>
+				<!--If the user is editing a question, show that in the prompt-->
 				<h2 ng-show="editIndex >= 0" style="margin-top: 0px">Editing Question {{editIndex + 1}}</h2>
+				<!--Angular upload-form directive handles GUI and logic-->
 				<form upload-form></form>
 			</div>
 		</div>
 		
+		<!--Floating statistics box, shown when the user toggles rootfields.stats boolean-->
 		<div style="position:fixed; width: 80%; height: 80%; top: 10%; left: 10%; border: 1px solid white; border-radius: 10px; background-color: #364583; color: white; z-index: 9999" ng-show="rootfields.stats && !student">
+			<!--X icon to close out of the statistics window, toggles rootfields.stats-->
 			<div style="position: absolute; top: 10px; right: 10px"><img ng-click="rootfields.stats = !rootfields.stats" src="x.png" style="max-width: 25px"></div>
 			<div style="padding: 30px">
 				<h2>Statistics by User for this Session</h2>
+				<!--Displays the percentage of correct responses per user-->
+				<!--Uses Angular number formatting for 2 decimal places-->
 				<div ng-repeat="(user, percentage) in stats | orderBy: percentage track by user">
 					{{user}}: {{percentage * 100 | number:2}}%
 				</div>
 			</div>
 		</div>
 		
+		<!--Build the main page structure when the user is authenticated-->
+		<!--Uses ng-show instead of ng-if so the rendering can take place and become visible instantaneously-->
 		<div ng-show="authed" drag-and-drop style="height: 100%">
+			<!--When the upload form is open, increase the amount of padding on the right to match the fixed-position div's width-->
+			<!--Uses tricky/confusing logic with the && and || to get a ternary-style logic branch (required for ng-style)-->
 			<div ng-style="{paddingRight : (!student && rootfields.upload && '551px') || '0px'}" style="text-align: center">
+				<!--Main Clickers heading-->
 				<h1 style="color: white; margin-bottom: 0px; margin-top: 0px; padding-top: 30px">Clickers ({{fields.username}})</h1>
 				<div style="padding-top: 20px; color: white"><span style="padding-right: 10px">Session:</span>
+					<!--Show a dropdown list of Sessions-->
 					<select ng-options="session as session for session in sessions track by session" ng-model="selectedSession">
+						<!--Add a default ng-if=false option so there is no blank option in the dropdown model-->
 						<option value="" ng-if="false"></option>
 					</select>
+					<!--If the user is an admin, show a button to create a new session-->
+					<!--Calls addSession() on the scope-->
 					<span ng-if="!student" style="padding-left: 30px"><button style="height: 35px" ng-click="addSession();">New Session</button></span>
+					<!--If the user is an admin, allow them to toggle the stats window with a Stats button-->
 					<span ng-if="!student" style="padding-left: 15px"><button style="height: 35px" ng-click="rootfields.stats = !rootfields.stats; buildStats()">Stats</button></span>
 				</div>
+				<!--If a user is designated as an admin, allow them to toggle themselves as a student and back to admin-->
 				<span ng-show="admin"><input style="position: relative; top: 12px" type="checkbox" ng-model="student" ng-init="false"> <span style="color: white">Student Mode</span><br /></span>
 				<div style="display: inline-block; text-align: left; width: 90%; max-width: 800px; padding: 20px">
+					<!--If there are no questions on the scope, show a default message that there are no questions-->
 					<div ng-if="!questions || questions.length == 0" style="text-align: center; color: white"><h2>No questions to show yet.<br /><span ng-if="!student">Click the + icon to get started.</span></h2></div>
+					<!--Angular directive to show the actual list of questions-->
 					<question-list data='questions'></question-list>
 				</div>
 			</div>
